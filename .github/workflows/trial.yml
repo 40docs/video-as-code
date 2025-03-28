@@ -1,99 +1,72 @@
----
-name: Auto and Manual Video Creation with Remote Repos
+name: Video Pipeline (Integrated Microservices)
 
 on:
-  # Automatically trigger on push to the main branch of this repo
   push:
     paths:
-      - '**/*.png'
-      - '**/*.mp3'
-      - '**/*.pdf'
-
-  # Manual trigger via the GitHub Actions UI
+      - "input/**/*.pptx"
   workflow_dispatch:
 
-  # Trigger from remote repository dispatch event
-  repository_dispatch:
-    types: [update-video]
-
 jobs:
-  build-video:
+  generate-video:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout your own repository first (without deleting anything)
-    - name: Checkout current repository
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 1
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-    # Step 2: Pull only "outputs/images" from the MARP repository and place it in assets/images
-    - name: Pull images from MARP repo
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+
+    - name: Run pptx_extractor microservice
       run: |
-        rm -rf assets/images/outputs  # Remove the outputs directory if it exists
-        mkdir -p assets/images  # Create the directory if it doesn't exist
-        cd assets/images
-        git init
-        git remote add origin https://github.com/ajlab-gh/devops_content_creation_marp.git
-        git config core.sparseCheckout true
-        echo "outputs/images/*.png" >> .git/info/sparse-checkout  # Only target PNG files
-        git pull origin main
-        git sparse-checkout reapply  # Reapply sparse checkout to ensure files are updated
-        mv outputs/images/* .  # Move the images to the correct directory
-        rm -rf outputs  # Remove the outputs directory to avoid clutter
+        docker run --rm \
+          -v ${{ github.workspace }}/input:/app/uploads \
+          -v ${{ github.workspace }}/slides:/app/slides \
+          -v ${{ github.workspace }}/notes:/app/notes \
+          ghcr.io/40docs/pptx_extractor:latest
 
-    # Step 3: Pull only "audio" from the TTS repository and place it in assets/audio
-    - name: Pull audio from TTS repo
+    - name: Run TTS microservice for each extracted note
       run: |
-        rm -rf assets/audio  # Remove the old audio directory if it exists
-        mkdir -p assets/audio  # Create the directory if it doesn't exist
-        cd assets/audio
-        git init
-        git remote add origin https://github.com/ajlab-gh/devops_content_creation_tts.git
-        git config core.sparseCheckout true
-        echo "audio/*.mp3" >> .git/info/sparse-checkout  # Only target MP3 files
-        git pull origin main
-        git sparse-checkout reapply  # Reapply sparse checkout to ensure files are updated
-        mv audio/* .  # Move audio files to the correct directory (assets/audio)
-        rm -rf audio  # Remove the nested "audio" directory
+        mkdir -p assets/audio
+        docker run -d --rm -p 5002:5000 \
+          -v ${{ github.workspace }}/audio:/app/audio \
+          -e SPEECH_KEY=${{ secrets.SPEECH_KEY }} \
+          -e SPEECH_REGION=${{ secrets.SPEECH_REGION }} \
+          --name tts ghcr.io/40docs/tts_microservice:latest
 
-    # Step 4: Debug: Check if the files are correctly fetched and merged
-    - name: List images and audio files
+        sleep 5  # Give Flask time to start
+
+        for file in notes/slide_*.txt; do
+          slide=$(basename "$file" .txt)
+          text=$(cat "$file" | sed 's/"/\\"/g')
+          curl -s -X POST http://localhost:5002/text-to-speech \
+            -H "Content-Type: application/json" \
+            -d "{\"text\": \"$text\", \"filename\": \"$slide\"}"
+        done
+
+        docker stop tts
+
+    - name: Move images/audio to FFmpeg structure
       run: |
-        echo "Listing images:"
-        ls -la assets/images
-        echo "Listing audio:"
-        ls -la assets/audio
+        mkdir -p assets/images
+        cp slides/slide_*.png assets/images/
+        cp *.mp3 assets/audio/ || true  # skip if none
 
-    # Step 5: Set up Python
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
-    # Step 6: Install ffmpeg
-    - name: Install ffmpeg
+    - name: Install FFmpeg
       run: |
         sudo apt-get update
         sudo apt-get install -y ffmpeg
 
-    # Step 7: Run the video processing script
-    - name: Run video processing script
+    - name: Run FFmpeg video producer
       run: |
         python scripts/create_video.py
 
-
-    # Optional: Push the newly created video back to the repository
-    - name: Configure Git
+    - name: Commit final output
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-    - name: Commit PDF to the repository
-      run: |
-        git add .
-        git commit -m "Auto-generated video from new content"
+        git add outputs/final_output.mp4
+        git commit -m "Auto-generated video"
         git push
       env:
-        GH_TOKEN: ${{ github.token }}
-
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
