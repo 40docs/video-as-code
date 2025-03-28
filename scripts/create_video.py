@@ -1,6 +1,12 @@
 import os
 import subprocess
 import shutil
+import argparse
+
+# Bake in parser
+parser = argparse.ArgumentParser()
+parser.add_argument("--output-name", default="final_output", help="Output video filename (without extension)")
+args = parser.parse_args()
 
 # Define directories
 image_dir = "assets/images"
@@ -10,7 +16,7 @@ output_final_dir = "outputs"
 bumper_path_in = os.path.abspath("assets/bumpers/bumper_in.mp4")  # Absolute path to bumper video
 bumper_path_out = os.path.abspath("assets/bumpers/bumper_out.mp4")  # Absolute path to bumper video
 
-final_output = os.path.join(output_final_dir, f"final_output.mp4")
+final_output = os.path.join(output_final_dir, f"{args.output_name}.mp4")
 
 # Create output and temp directories if they don't exist
 if not os.path.exists(output_dir):

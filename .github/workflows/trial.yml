@@ -69,15 +69,25 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ffmpeg
 
+    - name: Extract base name of PPTX
+      id: extract_name
+      run: |
+        pptx=$(ls input/*.pptx | head -n 1)
+        name=$(basename "$pptx" .pptx)
+        echo "basename=$name" >> $GITHUB_OUTPUT
+
+    - name: Clean old outputs
+      run: rm -f outputs/*.mp4 || true
+
     - name: Run FFmpeg video producer
       run: |
-        python scripts/create_video.py
+        python scripts/create_video.py --output-name "${{ steps.extract_name.outputs.basename }}"
 
     - name: Commit final output
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add outputs/final_output.mp4
+        git add outputs/${{ steps.extract_name.outputs.basename }}.mp4
         git commit -m "Auto-generated video"
         git push
       env:
