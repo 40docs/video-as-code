@@ -19,11 +19,11 @@ jobs:
 
     - name: Run pptx_extractor microservice
       run: |
-        docker run --rm \
+        docker run -d --rm -p 5003:5000 \
           -v ${{ github.workspace }}/input:/app/uploads \
           -v ${{ github.workspace }}/slides:/app/slides \
           -v ${{ github.workspace }}/notes:/app/notes \
-          ghcr.io/40docs/pptx_extractor:latest
+          --name extractor ghcr.io/40docs/pptx_extractor:latest
 
     - name: Run TTS microservice for each extracted note
       run: |
