@@ -62,7 +62,7 @@ jobs:
       run: |
         mkdir -p assets/images
         cp slides/slide_*.png assets/images/
-        cp *.mp3 assets/audio/ || true  # skip if none
+        cp audio/*.mp3 assets/audio/ || true  # skip if none
 
     - name: Install FFmpeg
       run: |
