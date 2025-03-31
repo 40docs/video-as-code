@@ -45,17 +45,18 @@ jobs:
           -e SPEECH_KEY=${{ secrets.SPEECH_KEY }} \
           -e SPEECH_REGION=${{ secrets.SPEECH_REGION }} \
           --name tts ghcr.io/40docs/tts_microservices:latest
-
-        sleep 5  # Give Flask time to start
-
+    
+        sleep 5
+    
         for file in notes/slide_*.txt; do
           slide=$(basename "$file" .txt)
-          text=$(cat "$file" | sed 's/"/\\"/g')
+          text=$(cat "$file")
+          payload=$(jq -n --arg text "$text" --arg filename "$slide" '{text: $text, filename: $filename}')
           curl -s -X POST http://localhost:5002/text-to-speech \
             -H "Content-Type: application/json" \
-            -d "{\"text\": \"$text\", \"filename\": \"$slide\"}"
+            -d "$payload"
         done
-
+    
         docker stop tts
 
     - name: Move images/audio to FFmpeg structure
