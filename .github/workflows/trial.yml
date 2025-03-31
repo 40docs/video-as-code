@@ -64,11 +64,6 @@ jobs:
         cp slides/slide_*.png assets/images/
         cp audio/*.mp3 assets/audio/ || true  # skip if none
 
-    - name: Install FFmpeg
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ffmpeg
-
     - name: Extract base name of PPTX
       id: extract_name
       run: |
@@ -79,9 +74,20 @@ jobs:
     - name: Clean old outputs
       run: rm -f outputs/*.mp4 || true
 
-    - name: Run FFmpeg video producer
+    - name: Run video producer container
       run: |
-        python scripts/create_video.py --output-name "${{ steps.extract_name.outputs.basename }}"
+        docker run -d --rm -p 5003:5000 \
+          -v ${{ github.workspace }}/assets:/app/assets \
+          -v ${{ github.workspace }}/outputs:/app/outputs \
+          --name video ghcr.io/40docs/video_producer_microservice:latest
+    
+        sleep 5
+    
+        curl -s -X POST http://localhost:5003/create-video \
+          -H "Content-Type: application/json" \
+          -d "{\"output_name\": \"${{ steps.extract_name.outputs.basename }}\"}"
+    
+        docker stop video
 
     - name: Commit final output
       run: |
