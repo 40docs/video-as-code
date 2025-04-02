@@ -70,3 +70,4 @@ scripts/create_video.py  # FFmpeg-based video compiler
 - [ ] Add support for Kubernetes deployment (manifests)
 - [ ] Add Animation/Transition support
 - [ ] Add Headless recording functionality for Technical Demos
+- [ ] Build a frontend (GUI)
