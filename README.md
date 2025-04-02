@@ -66,7 +66,7 @@ scripts/create_video.py  # FFmpeg-based video compiler
 - [ ] Multiple Language Support
 - [ ] Dynamic Lower Thirds Support
 - [ ] Subtitle Support (SRT Files)
-- [ ] Autopublishing Capabilities
+- [ ] Auto-publishing Capabilities
 - [ ] Add support for Kubernetes deployment (manifests)
 - [ ] Add Animation/Transition support
 - [ ] Add Headless recording functionality for Technical Demos
