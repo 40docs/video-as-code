@@ -62,6 +62,11 @@ scripts/create_video.py  # FFmpeg-based video compiler
 ## 📅 Roadmap
 
 - [x] Convert FFmpeg build logic to a Flask microservice
+- [x] Multiple Voice Support (A/B Testing)
+- [ ] Multiple Language Support
+- [ ] Dynamic Lower Thirds Support
+- [ ] Subtitle Support (SRT Files)
+- [ ] Autopublishing Capabilities
 - [ ] Add support for Kubernetes deployment (manifests)
 - [ ] Add Animation/Transition support
 - [ ] Add Headless recording functionality for Technical Demos
