@@ -9,6 +9,8 @@ on:
 jobs:
   generate-video:
     runs-on: ubuntu-latest
+    env:
+      VOICE_GENDER: ${{ vars.VOICE_GENDER }}  # Using GitHub secrets, this can be set as 'male' or 'female'
 
     steps:
     - name: Checkout repo
@@ -71,8 +73,6 @@ jobs:
         done
     
         docker stop tts
-      env:
-        VOICE_GENDER: ${{ vars.VOICE_GENDER }}  # Using GitHub secrets, this can be set as 'male' or 'female'
 
     - name: Move images/audio to FFmpeg structure
       run: |
