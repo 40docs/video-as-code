@@ -41,12 +41,13 @@ jobs:
       run: |
         mkdir -p assets/audio
     
-        if [ "${{ vars.VOICE_GENDER }}" == "male" ]; then
+        # Check the VOICE_GENDER environment variable and set the correct voice
+        if [ "${{ env.VOICE_GENDER }}" == "male" ]; then
           voice="en-US-BrandonMultilingualNeural"
-        elif [ "${{ vars.VOICE_GENDER }}" == "female" ]; then
+        elif [ "${{ env.VOICE_GENDER }}" == "female" ]; then
           voice="en-US-AvaMultilingualNeural"
         else
-          echo "VOICE_NAME is not set to male or female, defaulting to male voice."
+          echo "VOICE_GENDER is not set to male or female, defaulting to female voice."
           voice="en-US-AvaMultilingualNeural"
         fi
     
@@ -59,6 +60,9 @@ jobs:
           --name tts ghcr.io/40docs/tts_microservices:latest
     
         sleep 5
+      env:
+        VOICE_GENDER: ${{ vars.VOICE_GENDER }}  # Using GitHub secrets, this can be set as 'male' or 'female'
+    
     
         for file in notes/slide_*.txt; do
           slide=$(basename "$file" .txt)
