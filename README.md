@@ -31,6 +31,13 @@ This kicks off a GitHub Action that runs the full video generation pipeline.
 | `SPEECH_KEY`      | Azure Cognitive Services Speech API Key           |
 | `SPEECH_REGION`   | Azure region of your Speech resource (e.g. `eastus`, `canadacentral`) |
 
+### 🔐 GitHub Variables (Required)
+
+| Secret Name       | Description                                       |
+|-------------------|---------------------------------------------------|
+| `VOICE_GENDER`    | `male` or `female`  (default set to female)       |
+
+
 ### GitHub Repository Permissions for `workflow`
 
 Ensure both `read` and `write` permissions are enabled. This workflow recommits the finished product back to the github repository hosting the solution.
