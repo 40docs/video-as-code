@@ -60,9 +60,6 @@ jobs:
           --name tts ghcr.io/40docs/tts_microservices:latest
     
         sleep 5
-      env:
-        VOICE_GENDER: ${{ vars.VOICE_GENDER }}  # Using GitHub secrets, this can be set as 'male' or 'female'
-    
     
         for file in notes/slide_*.txt; do
           slide=$(basename "$file" .txt)
@@ -74,6 +71,8 @@ jobs:
         done
     
         docker stop tts
+      env:
+        VOICE_GENDER: ${{ vars.VOICE_GENDER }}  # Using GitHub secrets, this can be set as 'male' or 'female'
 
     - name: Move images/audio to FFmpeg structure
       run: |
