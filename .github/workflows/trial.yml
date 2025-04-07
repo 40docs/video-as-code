@@ -58,7 +58,7 @@ jobs:
           -v ${{ github.workspace }}/audio:/app/audio \
           -e SPEECH_KEY=${{ secrets.SPEECH_KEY }} \
           -e SPEECH_REGION=${{ secrets.SPEECH_REGION }} \
-          -e VOICE="$voice" \ 
+          -e VOICE="$voice" \
           --name tts ghcr.io/40docs/tts_microservices:latest
     
         sleep 5
