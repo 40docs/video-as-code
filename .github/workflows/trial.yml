@@ -40,10 +40,22 @@ jobs:
     - name: Run TTS microservice for each extracted note
       run: |
         mkdir -p assets/audio
+    
+        if [ "${{ vars.VOICE_GENDER }}" == "male" ]; then
+          voice="en-US-BrandonMultilingualNeural"
+        elif [ "${{ vars.VOICE_GENDER }}" == "female" ]; then
+          voice="en-US-AvaMultilingualNeural"
+        else
+          echo "VOICE_NAME is not set to male or female, defaulting to male voice."
+          voice="en-US-AvaMultilingualNeural"
+        fi
+    
+        # Run the TTS microservice with the voice variable set in environment
         docker run -d --rm -p 5002:5000 \
           -v ${{ github.workspace }}/audio:/app/audio \
           -e SPEECH_KEY=${{ secrets.SPEECH_KEY }} \
           -e SPEECH_REGION=${{ secrets.SPEECH_REGION }} \
+          -e VOICE="$voice" \ 
           --name tts ghcr.io/40docs/tts_microservices:latest
     
         sleep 5
