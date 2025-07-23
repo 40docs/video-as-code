@@ -95,7 +95,7 @@ jobs:
         docker run -d --rm -p 5003:5000 \
           -v ${{ github.workspace }}/assets:/app/assets \
           -v ${{ github.workspace }}/outputs:/app/outputs \
-          --name video ghcr.io/40docs/video_producer_microservice:latest
+          --name video ghcr.io/40docs/video-producer-microservice:latest
     
         sleep 5
     
