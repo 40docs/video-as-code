@@ -59,7 +59,7 @@ jobs:
           -e SPEECH_KEY=${{ secrets.SPEECH_KEY }} \
           -e SPEECH_REGION=${{ secrets.SPEECH_REGION }} \
           -e VOICE="$voice" \
-          --name tts ghcr.io/40docs/tts_microservices:latest
+          --name tts ghcr.io/40docs/tts-microservices:latest
     
         sleep 5
     
